@@ -1,0 +1,126 @@
+{
+  "entities": {
+    "ComplaintIncident": {
+      "title": "ComplaintIncident",
+      "description": "A citizen-reported or sensor-verified municipal infrastructure complaint or disaster incident.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique complaint or incident identifier.",
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "description": "Brief description or summary title of the complaint.",
+          "maxLength": 300
+        },
+        "category": {
+          "type": "string",
+          "description": "Civic category of the defect.",
+          "enum": ["pothole", "streetlight", "garbage", "drainage", "water_leak"]
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Geographical latitude coordinate."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Geographical longitude coordinate."
+        },
+        "reportedAt": {
+          "type": "string",
+          "description": "ISO timestamp string when complaint was raised.",
+          "maxLength": 64
+        },
+        "status": {
+          "type": "string",
+          "description": "Current lifecycle state of the complaint ticket.",
+          "enum": ["Reported", "Under Review", "Verified", "Assigned", "In Progress", "Resolved", "Corroborated"]
+        },
+        "upvotes": {
+          "type": "number",
+          "description": "Total community verification upvotes."
+        },
+        "parentClusterId": {
+          "type": "string",
+          "description": "Optional cluster ID if grouped into a deduplicated defect hotspot.",
+          "maxLength": 128
+        },
+        "severityScore": {
+          "type": "number",
+          "description": "Calculated defect hazard score (1-10)."
+        },
+        "hazardWeight": {
+          "type": "number",
+          "description": "Physical hazard weight based on public safety impact."
+        },
+        "vulnerabilityFactor": {
+          "type": "number",
+          "description": "Socio-demographic vulnerability factor."
+        },
+        "daysOpen": {
+          "type": "number",
+          "description": "Total business days ticket has remained open."
+        },
+        "address": {
+          "type": "string",
+          "description": "Physical address or landmark location.",
+          "maxLength": 500
+        },
+        "ward": {
+          "type": "string",
+          "description": "Administrative ward or locality zone.",
+          "maxLength": 120
+        },
+        "city": {
+          "type": "string",
+          "description": "City of occurrence.",
+          "maxLength": 100
+        },
+        "state": {
+          "type": "string",
+          "description": "State or region.",
+          "maxLength": 100
+        },
+        "pincode": {
+          "type": "string",
+          "description": "Postal postal/pin code.",
+          "maxLength": 30
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed explanation of the issue submitted by citizen.",
+          "maxLength": 3000
+        },
+        "clusterLabel": {
+          "type": "string",
+          "description": "Human-readable cluster or hazard label.",
+          "maxLength": 150
+        },
+        "imagePreview": {
+          "type": "string",
+          "description": "URL or preview image representation.",
+          "maxLength": 150000
+        },
+        "reportedBy": {
+          "type": "string",
+          "description": "Name or handle of reporter.",
+          "maxLength": 120
+        },
+        "authorUid": {
+          "type": "string",
+          "description": "Optional authenticated UID of the submitting user.",
+          "maxLength": 128
+        }
+      },
+      "required": ["id", "title", "category", "latitude", "longitude", "status", "reportedAt"]
+    }
+  },
+  "firestore": {
+    "/complaints/{complaintId}": {
+      "schema": "ComplaintIncident",
+      "description": "Primary storage of all citizen-raised civic complaints, infrastructure defects, and work orders."
+    }
+  }
+}

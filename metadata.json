@@ -1,0 +1,6 @@
+{
+  "name": "CivicResilience",
+  "description": "Live municipal incident grid, citizen triage ledger, and real-time civic dispatch for CivicResilience & DisasterHelp.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

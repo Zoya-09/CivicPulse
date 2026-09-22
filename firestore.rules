@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidStatus(status) {
+      return status in ['Reported', 'Under Review', 'Verified', 'Assigned', 'In Progress', 'Resolved', 'Corroborated'];
+    }
+
+    function isValidCategory(cat) {
+      return cat in ['pothole', 'streetlight', 'garbage', 'drainage', 'water_leak'];
+    }
+
+    function isValidComplaint(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 300 &&
+             isValidCategory(data.category) &&
+             isValidStatus(data.status) &&
+             data.latitude is number && data.latitude >= -90.0 && data.latitude <= 90.0 &&
+             data.longitude is number && data.longitude >= -180.0 && data.longitude <= 180.0 &&
+             data.reportedAt is string && data.reportedAt.size() <= 64 &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 3000)) &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 500)) &&
+             (!('ward' in data) || (data.ward is string && data.ward.size() <= 120)) &&
+             (!('city' in data) || (data.city is string && data.city.size() <= 100)) &&
+             (!('state' in data) || (data.state is string && data.state.size() <= 100)) &&
+             (!('pincode' in data) || (data.pincode is string && data.pincode.size() <= 30)) &&
+             (!('upvotes' in data) || (data.upvotes is number && data.upvotes >= 0)) &&
+             (!('severityScore' in data) || (data.severityScore is number && data.severityScore >= 0 && data.severityScore <= 100)) &&
+             (!('daysOpen' in data) || (data.daysOpen is number && data.daysOpen >= 0)) &&
+             (!('reportedBy' in data) || (data.reportedBy is string && data.reportedBy.size() <= 120)) &&
+             (!('hazardWeight' in data) || (data.hazardWeight is number && data.hazardWeight >= 0)) &&
+             (!('vulnerabilityFactor' in data) || (data.vulnerabilityFactor is number && data.vulnerabilityFactor >= 0)) &&
+             (!('clusterLabel' in data) || (data.clusterLabel is string && data.clusterLabel.size() <= 150)) &&
+             (!('parentClusterId' in data) || (data.parentClusterId is string && data.parentClusterId.size() <= 128)) &&
+             (!('imagePreview' in data) || (data.imagePreview is string && data.imagePreview.size() <= 150000)) &&
+             (!('imageStorageMetadata' in data) || data.imageStorageMetadata is map);
+    }
+
+    // Complaints Collection
+    match /complaints/{complaintId} {
+      // Open read access for community transparency, civic map, and public audits
+      allow get, list: if true;
+
+      // Allow creating complaints with strict schema validation
+      allow create: if isValidId(complaintId) &&
+                       incoming().id == complaintId &&
+                       isValidComplaint(incoming());
+
+      // Allow updates to status, upvotes, notes with integrity retention
+      allow update: if isValidId(complaintId) &&
+                       incoming().id == existing().id &&
+                       isValidComplaint(incoming());
+
+      // Prevent unauthorized deletion of historical public records
+      allow delete: if false;
+    }
+  }
+}
